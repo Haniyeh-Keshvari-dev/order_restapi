@@ -4,15 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class OrderItems extends Model
+class OrderItem extends Model
 {
     protected $fillable = ['order_id','product_id','quantity','unit_price'];
     public function product(){
 
-        $this->belongsTo(Products::class);
+        $this->belongsTo(Product::class);
     }
 
     public function order(){
-        $this->belongsTo(Orders::class);
+        $this->belongsTo(Order::class);
     }
 }

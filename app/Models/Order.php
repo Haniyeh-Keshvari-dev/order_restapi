@@ -4,15 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Orders extends Model
+class Order extends Model
 {
     protected $fillable = ['customer_id', 'total_amount'];
     public function customer()
     {
-        $this->belongsTo(Customers::class);
+        $this->belongsTo(Customer::class);
     }
     public function orderitems(){
 
-        $this->hasMany(OrderItems::class);
+        $this->hasMany(OrderItem::class);
     }
 }
