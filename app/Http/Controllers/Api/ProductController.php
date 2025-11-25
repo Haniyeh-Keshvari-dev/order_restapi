@@ -13,7 +13,32 @@ class ProductController extends Controller
      */
     public function index(request $request)
     {
+        $query = Product::query();
 
+        if ($request->has('sku')) {
+            $query->where('sku', 'like', '%' . $request->sku . '%');
+        }
+
+        if ($request->has('name')) {
+            $query->where('name', 'like', '%' . $request->name . '%');
+        }
+
+        if ($request->filled('min_price')) {
+            $query->where('price', '>=', $request->min_price);
+        }
+
+        if ($request->filled('max_price')) {
+            $query->where('price', '<=', $request->max_price);
+        }
+
+        $sortby=$request->get('sort_by','created_at');
+        $sortdir=$request->get('sort_dir','desc');
+
+        $query->orderBy($sortby,$sortdir);
+
+        $perpage=(int)$request->get('per_page');
+
+        return response()->json($query->paginate($perpage),200);
     }
 
     /**
