@@ -6,3 +6,9 @@ use App\Http\Controllers\Api\ProductController;
 
 Route::apiResource('products', ProductController::class);
 
+// routes/api.php
+Route::post('/test', function() {
+    return ['message' => 'OK'];
+});
+
+

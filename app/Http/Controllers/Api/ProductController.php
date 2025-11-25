@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreProductRequest;
 use App\Models\Product;
 use Illuminate\Http\Request;
 
@@ -31,14 +32,14 @@ class ProductController extends Controller
             $query->where('price', '<=', $request->max_price);
         }
 
-        $sortby=$request->get('sort_by','created_at');
-        $sortdir=$request->get('sort_dir','desc');
+        $sortby = $request->get('sort_by', 'created_at');
+        $sortdir = $request->get('sort_dir', 'desc');
 
-        $query->orderBy($sortby,$sortdir);
+        $query->orderBy($sortby, $sortdir);
 
-        $perpage=(int)$request->get('per_page');
+        $perpage = (int)$request->get('per_page');
 
-        return response()->json($query->paginate($perpage),200);
+        return response()->json($query->paginate($perpage), 200);
     }
 
     /**
@@ -52,9 +53,29 @@ class ProductController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreProductRequest $request)
     {
-        //
+//        $product = Product::create([
+//                'name' => $request->name,
+//                'sku' => $request->sku,
+//                'price' => $request->price,
+//                'stock_quantity' => $request->stock_quantity
+//            ]
+//        );
+//        return response()->json([
+//            'message' => 'Product created successfully',
+//            'product' => $product
+//
+//        ],201);
+
+        $validatedData = $request->validated();
+        $product = Product::create($validatedData);
+        return response()->json([
+            'message' => 'Product created successfully',
+            'product' => $product
+
+        ],201);
+
     }
 
     /**
