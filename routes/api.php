@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\CustomerController;
+use App\Http\Controllers\Api\OrderController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ProductController;
 
@@ -12,6 +13,7 @@ Route::post('/test', function() {
 
 Route::apiResource('products', ProductController::class);
 Route::apiResource('customers', CustomerController::class);
+Route::apiResource('orders', OrderController::class);
 
 
 
