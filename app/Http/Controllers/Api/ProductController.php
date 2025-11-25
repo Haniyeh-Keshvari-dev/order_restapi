@@ -13,7 +13,7 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(request $request)
+    public function index(Request $request)
     {
         $query = Product::query();
 
@@ -38,7 +38,7 @@ class ProductController extends Controller
 
         $query->orderBy($sortby, $sortdir);
 
-        $perpage = (int)$request->get('per_page');
+        $perpage = (int)$request->get('per_page',15);
 
         return response()->json($query->paginate($perpage), 200);
     }
