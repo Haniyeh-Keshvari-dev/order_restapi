@@ -8,15 +8,16 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+
     }
 
     /**
@@ -28,30 +29,48 @@ class OrderController extends Controller
         $customerId = $data['customer_id'];
         $items = $data['items'];
 
-        $totalamount = 0;
-        foreach ($items as $item) {
-            $product = Product::find($item['product_id']);
-            $totalamount += $product['price'] * $item['quantity'];
-        }
-        $order = Order::create([
-            'customer_id' => $customerId,
-            'total_amount' => $totalamount,
-        ]);
+        DB::beginTransaction();
 
-        foreach ($items as $item) {
-            $product = Product::find($item['product_id']);
-            OrderItem::create([
-                'order_id' => $order->id,
-                'product_id' => $item['product_id'],
-                'quantity' => $item['quantity'],
-                'unit_price' => $product['price'],
+        try {
+            $totalamount = 0;
+            foreach ($items as $item) {
+                $product = Product::find($item['product_id']);
+
+                if ($product->stock_quantity < $item['quantity']) {
+                    throw new \Exception("Insufficient stock for product: {$product->name}");
+                }
+                $totalamount += $product['price'] * $item['quantity'];
+            }
+            $order = Order::create([
+                'customer_id' => $customerId,
+                'total_amount' => $totalamount,
             ]);
-        }
-        return response()->json([
-            'message' => 'Order created successfully',
-            'order' => $order->load('items'),
-        ], 201);
 
+            foreach ($items as $item) {
+                $product = Product::find($item['product_id']);
+                OrderItem::create([
+                    'order_id' => $order->id,
+                    'product_id' => $item['product_id'],
+                    'quantity' => $item['quantity'],
+                    'unit_price' => $product['price'],
+                ]);
+
+                $product->decrement('stock_quantity', $item['quantity']);
+            }
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Order created successfully',
+                'order' => $order->load('items'),
+            ], 201);
+
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            return response()->json([
+                'message' => $exception->getMessage()
+            ], 400);
+
+        }
     }
 
     /**
