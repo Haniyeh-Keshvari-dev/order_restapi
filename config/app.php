@@ -15,6 +15,7 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment
@@ -98,6 +99,8 @@ return [
     'cipher' => 'AES-256-CBC',
 
     'key' => env('APP_KEY'),
+
+    'api_key' => env('API_KEY'),
 
     'previous_keys' => [
         ...array_filter(
