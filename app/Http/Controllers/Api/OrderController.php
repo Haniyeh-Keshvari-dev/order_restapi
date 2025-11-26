@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreOrderRequest;
+use App\Http\Requests\UpdateOrderRequest;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\OrderItem;
@@ -17,7 +18,18 @@ class OrderController extends Controller
      */
     public function index(Request $request)
     {
+        $query = Order::with('items');
+        if ($request->filled('customer_id')) {
+            $query->where('customer_id', $request->customer_id);
+        }
+        $query->orderBy('created_at', 'desc');
 
+        $perPage = (int)$request->get('per_page', 15);
+
+        return response()->json(
+            $query->paginate($perPage),
+            200
+        );
     }
 
     /**
@@ -76,32 +88,78 @@ class OrderController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Order $orders)
+    public function show(Order $order)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Order $orders)
-    {
-        //
+        return response()->json([
+            'order' => $order->load('items')
+        ], 200);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Order $orders)
+    public function update(UpdateOrderRequest $request, Order $order)
     {
-        //
+        $data = $request->validated();
+
+        DB::beginTransaction();
+
+        try {
+            if (isset($data['customer_id'])) {
+                $order->customer_id = $data['customer_id'];
+            }
+
+            if (isset($data['items'])) {
+
+                $order->items()->delete();
+
+                $totalPrice = 0;
+
+                foreach ($data['items'] as $item) {
+
+                    $product = Product::find($item['product_id']);
+                    $itemPrice = $product->price * $item['quantity'];
+
+                    $order->items()->create([
+                        'product_id' => $item['product_id'],
+                        'quantity' => $item['quantity'],
+                        'unit_price' => $product->price,
+                    ]);
+
+                    $totalPrice += $itemPrice;
+                }
+
+                $order->total_amount = $totalPrice;
+            }
+
+            $order->save();
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Order updated successfully',
+                'order' => $order->load('items')
+            ], 200);
+
+        } catch (\Exception $exception) {
+
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Failed to update order',
+                'error' => $exception->getMessage(),
+            ], 500);
+        }
     }
+
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Order $orders)
+    public function destroy(Order $order)
     {
-        //
+        $order->delete();
+        return response()->json([
+            'message' => 'Order deleted successfully',
+        ],200);
     }
 }

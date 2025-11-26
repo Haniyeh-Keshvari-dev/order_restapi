@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('customer_id')->constrained('costomers')->onDelete('cascade');
             $table->decimal('total_amount',12,2)->default(0);
+            $table->softDeletes();
             $table->timestamps();
         });
     }
