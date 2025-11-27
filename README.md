@@ -1,59 +1,282 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Orders REST API — Laravel
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+این پروژه یک RESTful API کامل برای مدیریت محصولات (Products)، مشتریان (Customers) و سفارش‌ها (Orders) است.  
+این API شامل CRUD کامل برای سه ریسورس، مدیریت آیتم‌های سفارش، ولیدیشن حرفه‌ای با Form Request،  
+middleware اختصاصی برای احراز هویت با(X-API-KEY) و منطق محاسبه‌ی سفارش با Transaction است.
 
-## About Laravel
+## امکانات اصلی پروژه
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+### Products (CRUD کامل)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- ایجاد، ویرایش، حذف، نمایش
+- فیلتر بر اساس `name` و `sku`
+- sorting و pagination
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Customers (CRUD کامل)
 
-## Learning Laravel
+- ایجاد، ویرایش، حذف
+- فیلتر بر اساس `name` و `email`
+- pagination
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### Orders (CRUD + منطق سفارش)
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- ایجاد سفارش با:
+    - ولیدیشن کامل آیتم‌ها
+    - محاسبه total_amount
+    - ذخیره order + order_items
+    - اجرا داخل Transaction
+- نمایش سفارش
+- فیلتر customer_id
+- pagination
+- حذف سفارش
 
-## Laravel Sponsors
+### Middleware: X-API-KEY
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+تمام روت‌ها با هدر زیر محافظت می‌شوند:
 
-### Premium Partners
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+X-API-KEY: 123456789
 
-## Contributing
+````
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+## پیش‌نیازها
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+- PHP 8.1+
+- Composer
+- Laravel 12
+- MySQL
+- Postman
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## نصب و راه‌اندازی
 
-## License
+### 1. کلون پروژه
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+git clone https://github.com/Haniyeh-Keshvari-dev/order_restapi.git
+cd order_restapi
+
+````
+
+### 2. نصب پکیج‌ها
+
+```bash
+composer install
+```
+
+### 3. ساخت فایل env
+
+```bash
+cp .env.example .env
+```
+
+### 4. مقداردهی `.env`
+
+```
+DB_DATABASE=order_restapi
+DB_USERNAME=root
+DB_PASSWORD=
+
+API_KEY=123456789
+```
+
+### 5. ساخت کلید اپ
+
+```bash
+php artisan key:generate
+```
+
+### 6. ساخت جداول + seed
+
+```bash
+php artisan migrate --seed
+```
+
+### 7. اجرا
+
+```bash
+php artisan serve
+```
+
+---
+
+## روت‌ها (Endpoints)
+
+تمام درخواست‌ها باید هدر زیر را داشته باشند:
+
+```
+X-API-KEY: 123456789
+```
+
+---
+
+# Products
+
+### لیست محصولات
+
+```
+GET /api/products
+```
+
+فیلتر:
+
+```
+GET /api/products?name=harum
+GET /api/products?sku=2312
+GET /api/products?per_page=10
+```
+
+### ایجاد محصول
+
+```
+POST /api/products
+```
+
+Body:
+
+```json
+{
+    "name": "T-Shirt",
+    "sku": "TSH-001",
+    "price": 25.50,
+    "stock_quantity": 100
+}
+```
+
+### نمایش محصول
+
+```
+GET /api/products/{product}
+```
+
+### آپدیت محصول
+
+```
+PUT /api/products/{product}
+```
+
+### حذف محصول
+
+```
+DELETE /api/products/{product}
+```
+
+---
+
+# Customers
+
+### لیست
+
+```
+GET /api/customers?name=ali&email=test
+```
+
+### ایجاد
+
+```
+POST /api/customers
+```
+
+### نمایش
+
+```
+GET /api/customers/{customer}
+```
+
+### آپدیت
+
+```
+PUT /api/customers/{customer}
+```
+
+### حذف
+
+```
+DELETE /api/customers/{customer}
+```
+
+---
+
+# Orders
+
+### ایجاد سفارش
+
+```
+POST /api/orders
+```
+
+Body:
+
+```json
+{
+    "customer_id": 1,
+    "items": [
+        {
+            "product_id": 2,
+            "quantity": 3
+        },
+        {
+            "product_id": 5,
+            "quantity": 1
+        }
+    ]
+}
+```
+
+### لیست سفارش‌ها
+
+```
+GET /api/orders?customer_id=1&per_page=10
+```
+
+### نمایش سفارش
+
+```
+GET /api/orders/{order}
+```
+
+### حذف سفارش
+
+```
+DELETE /api/orders/{order}
+```
+
+---
+
+## توضیحات
+
+* استفاده از **Transaction** برای جلوگیری از ذخیره ناقص
+* ذخیره `unit_price` داخل order_items (برای ثابت ماندن قیمت تاریخی)
+* استفاده از **Form Request** برای تمیز شدن کنترلرها
+* استفاده از middleware اختصاصی `X-API-KEY`
+* pagination استاندارد
+* بارگذاری روابط با `with()` در index و show
+
+---
+
+##  تست API
+
+publish document by postman:
+(customer) : https://documenter.getpostman.com/view/45954196/2sB3dK1YHQ
+(product) : https://documenter.getpostman.com/view/45954196/2sB3dK1YHT
+(order) : https://documenter.getpostman.com/view/45954196/2sB3dK1YHW
+
+
+## لیست روت ها 
+
+
+```bash
+php artisan route:list
+```
+
+ریست دیتابیس:
+
+```bash
+php artisan migrate:fresh --seed
+```
+
+---
